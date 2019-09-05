@@ -4,38 +4,63 @@ SUPPORT_BUILD_MBEDTLS=y
 SUPPORT_BUILD_CJSON=y
 SUPPORT_BUILD_ICONV=y
 SUPPORT_BUILD_LIBUUID=y
+SUPPORT_BUILD_ZBAR=y
 SUPPORT_BUILD_LIBJPEG=y
+SUPPORT_BUILD_MXML=y
 SUPPORT_BUILD_HOSTAP=n
-SUPPORT_BUILD_LOG4C=n
 SUPPORT_BUILD_WPA_SUPPORT=n
 SUPPORT_BUILD_LOG4C=n
 SUPPORT_BUILD_CURL=n
 SUPPORT_BUILD_OPUS=n
 SUPPORT_BUILD_OPENSSL=y
 
-all: mbedtls cjson iconv libuuid opus wpa hostapd openssl 
+all: mbedtls cjson iconv libuuid zbar libjpeg hostap wpa opus #openssl 
 .PHONY:all
 	@echo -e "\033[0;1;32mbuild $(ARCH) platform lib\033[0m"
 
-### libuuid
-libuuid:
-ifeq ($(SUPPORT_BUILD_LIBUUID),y)
-ifneq ($(shell [ -f $(INSTALL_TOP)/libuuid/lib/libuuid.a ] && echo y),y)
-	mkdir -p $(INSTALL_TOP)/libuuid
-	tar xf libuuid-1.0.3.tar.gz
-	cd libuuid-1.0.3 && ./configure --prefix=$(INSTALL_TOP)/libuuid  --host=${HOST_NAME} --enable-shared=no --enable-static=yes CC=$(CC) && make -j4 && make install && cd -
-	rm -rf libuuid-1.0.3
-endif
-	@echo -e "\033[0;1;32mlibuuid already build OK\033[0m"
+### libjpeg
+libjpeg:
+ifeq ($(SUPPORT_BUILD_LIBJPEG),y)
+ifneq (echo y,y)
+	mkdir -p $(INSTALL_TOP)/libjpeg
+	tar xf libjpeg-turbo-2.0.2.tar.gz
+	cd libjpeg-turbo-2.0.2/ && mkdir -p build && cd  build && cmake -DCMAKE_INSTALL_PREFIX=$(INSTALL_TOP)/libjpeg -DCMAKE_BUILD_TYPE=RELEASE -DENABLE_STATIC=TRUE -DENABLE_SHARED=FALSE .. && make -j4 && make install 
+	rm -rf libjpeg-turbo-2.0.2
+	
 endif
 
+endif
+
+### mxml
+mxml:
+ifeq ($(SUPPORT_BUILD_MXML),y)
+ifneq (echo y,y)
+	mdkir -p $(INSTALL_TOP)/mxml
+	
+endif
+
+endif
+
+### zbar
+zbar:
+ifeq ($(SUPPORT_BUILD_ZBAR),y)
+ifneq ($(shell [ -f $(INSTALL_TOP)/zbar/lib/libzbar.a ] && echo y),y)
+	mkdir -p $(INSTALL_TOP)/zbar
+	tar xf zbar-0.10.tar.gz
+	export CFLAGS=""
+	#不编译动态库
+	#CONFIGURE=--prefix=$(INSTALL_TOP)/zbar --without-gtk --without-x --without-xshm --without-npapi --without-python --without-qt --without-imagemagick --without-jpeg --disable-video --disable-shared
+	cd zbar-0.10 && ./configure  --prefix=$(INSTALL_TOP)/zbar --host=$(HOST_NAME) --without-gtk --without-x --without-xshm --without-npapi --without-python --without-qt --without-imagemagick --without-jpeg --disable-video --disable-shared && make CC=$(CC) -j4  CFLAGS="-I/usr/local/include" && make install 
+	rm -rf zbar-0.10
+endif
+	@echo -e "\033[0;1;32mzbar already build OK\033[0m"
+endif
 
 ### mbedtls
 mbedtls:
 ifeq ($(SUPPORT_BUILD_MBEDTLS),y)
 ifneq ($(shell [ -f $(INSTALL_TOP)/mbedtls/lib/libmbedtls.a ] && echo y),y)
 		mkdir -p $(INSTALL_TOP)/mbedtls
-		rm -fr mbedtls-2.12.0
 		tar xf mbedtls-2.12.0-apache.tgz
 		cd mbedtls-2.12.0 && mkdir build && cd build && cmake .. -DCMAKE_INSTALL_PREFIX=$(INSTALL_TOP)/mbedtls && make -j4 && make install && cd ../../
 		rm -fr mbedtls-2.12.0
@@ -66,6 +91,21 @@ ifneq ($(shell [ -f ${INSTALL_TOP}/iconv/lib/libconv.a] && echo y),y)
 endif
 	@echo -e "\033[0;1;32miconv already build OK\033[0m"
 endif
+
+### libuuid
+libuuid:
+ifeq ($(SUPPORT_BUILD_LIBUUID),y)
+ifneq ($(shell [ -f $(INSTALL_TOP)/libuuid/lib/libuuid.a ] && echo y),y)
+	mkdir -p $(INSTALL_TOP)/libuuid
+	tar xf libuuid-1.0.3.tar.gz
+	cd libuuid-1.0.3 && ./configure --prefix=$(INSTALL_TOP)/libuuid  --host=${HOST_NAME} --enable-shared=no --enable-static=yes CC=$(CC) && make -j4 && make install && cd -
+	rm -rf libuuid-1.0.3
+endif
+	@echo -e "\033[0;1;32mlibuuid already build OK\033[0m"
+endif
+
+
+
 
 
 
