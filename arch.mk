@@ -16,7 +16,8 @@ else ifeq ($(ARCH), mstart)
 
 else ifeq ($(ARCH),hi3518ev200) 
 	CROSS=arm-hisiv300-linux-
-
+else ifeq ($(ARCH),himix200)
+	CROSS=arm-himix200-linux-
 else ifeq ($(ARCH),)
 	ifeq ($(shell uname -m), x86_64)
 		ARCH=x64
