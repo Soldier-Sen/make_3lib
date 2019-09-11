@@ -6,6 +6,7 @@ SUPPORT_BUILD_ICONV=y
 SUPPORT_BUILD_LIBUUID=y
 SUPPORT_BUILD_ZBAR=y
 SUPPORT_BUILD_LIBJPEG=y
+SUPPORT_BUILD_FAAC=y
 SUPPORT_BUILD_MXML=y
 SUPPORT_BUILD_HOSTAP=n
 SUPPORT_BUILD_WPA_SUPPORT=n
@@ -14,9 +15,22 @@ SUPPORT_BUILD_CURL=n
 SUPPORT_BUILD_OPUS=n
 SUPPORT_BUILD_OPENSSL=y
 
-all: mbedtls cjson iconv libuuid zbar libjpeg hostap wpa opus #openssl 
+all: mbedtls cjson iconv libuuid zbar libjpeg faac hostap wpa opus #openssl 
 .PHONY:all
 	@echo -e "\033[0;1;32mbuild $(ARCH) platform lib\033[0m"
+
+### faac
+faac:
+ifeq ($(SUPPORT_BUILD_FAAC),y)
+ifneq ($(shell [ -f $(INSTALL_TOP)/faac/lib/libfaac.a ] && echo y),y)
+	mkdir -p $(INSTALL_TOP)/faac
+	tar xf faac-1.29.9.2.tar.gz
+	cd faac-1.29.9.2/ && ./configure --prefix=$(INSTALL_TOP)/faac --enable-shared=no --enable-static=yes --with-mp4v2=no CC=$(cc) && make -j4 && make install 
+	rm -rf faac-1.29.9.2
+endif
+	@echo -e "\033[0;1;32mfaac already build OK\033[0m"
+endif
+
 
 ### libjpeg
 libjpeg:
