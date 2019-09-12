@@ -24,8 +24,11 @@ faac:
 ifeq ($(SUPPORT_BUILD_FAAC),y)
 ifneq ($(shell [ -f $(INSTALL_TOP)/faac/lib/libfaac.a ] && echo y),y)
 	mkdir -p $(INSTALL_TOP)/faac
+	rm -rf faac-1.29.9.2
 	tar xf faac-1.29.9.2.tar.gz
-	cd faac-1.29.9.2/ && ./configure --prefix=$(INSTALL_TOP)/faac --enable-shared=no --enable-static=yes --with-mp4v2=no CC=$(cc) && make -j4 && make install 
+	cd faac-1.29.9.2/ && ./configure --prefix=$(INSTALL_TOP)/faac --enable-shared=no --enable-static=yes --with-mp4v2=no CC=$(CC) --host=$(HOST_NAME) && make -j4 #&& make install 
+	cd faac-1.29.9.2/ && make install
+	rm -rf $(INSTALL_TOP)/faac/share
 	rm -rf faac-1.29.9.2
 endif
 	@echo -e "\033[0;1;32mfaac already build OK\033[0m"
