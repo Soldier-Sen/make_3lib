@@ -7,17 +7,48 @@ SUPPORT_BUILD_LIBUUID=y
 SUPPORT_BUILD_ZBAR=y
 SUPPORT_BUILD_LIBJPEG=y
 SUPPORT_BUILD_FAAC=y
+SUPPORT_BUILD_FDK_AAC=y
+SUPPORT_BUILD_STRACE=y
 SUPPORT_BUILD_MXML=y
 SUPPORT_BUILD_HOSTAP=n
 SUPPORT_BUILD_WPA_SUPPORT=n
 SUPPORT_BUILD_LOG4C=n
 SUPPORT_BUILD_CURL=n
 SUPPORT_BUILD_OPUS=n
-SUPPORT_BUILD_OPENSSL=y
+SUPPORT_BUILD_OPENSSL=n
 
-all: mbedtls cjson iconv libuuid zbar libjpeg faac hostap wpa opus #openssl 
+all: mbedtls cjson iconv libuuid zbar libjpeg faac fdk-aac strace hostap wpa opus #openssl 
 .PHONY:all
-	@echo -e "\033[0;1;32mbuild $(ARCH) platform lib\033[0m"
+	@echo -e "\033[0;1;32mbuild $(arch) platform lib\033[0m"
+
+### strace
+strace:
+ifeq ($(SUPPORT_BUILD_STRACE),y)
+ifneq ($(shell [ -f $(INSTALL_TOP)/strace/bin/strace ] && echo y),y)
+	mkdir -p $(INSTALL_TOP)/strace
+	rm -rf strace-4.20
+	tar xf strace-4.20.tar.xz
+	cd strace-4.20/ && ./configure --prefix=$(INSTALL_TOP)/strace  CC=$(CC) --host=$(HOST_NAME) 
+	make -C strace-4.20 -j4 && cd strace-4.20 && make install 
+	rm -rf $(INSTALL_TOP)/strace/share
+	rm -rf strace-4.20
+endif
+	@echo -e "\033[0;1;32mstrace already build OK\033[0m"
+endif
+
+### fdk-aac
+fdk-aac:
+ifeq ($(SUPPORT_BUILD_FDK_AAC),y)
+ifneq ($(shell [ -f $(INSTALL_TOP)/fdk-aac/lib/libfdk-aac.a ] && echo y),y)
+	mkdir -p $(INSTALL_TOP)/fdk-aac
+	rm -rf fdk-aac-2.0.0
+	tar xf fdk-aac-2.0.0.tar.gz
+	cd fdk-aac-2.0.0  && ./configure --prefix=$(INSTALL_TOP)/fdk-aac --enable-shared=no --enable-static=yes  CC=$(CC) --host=$(HOST_NAME) && make -j4 && make install 
+	rm -rf $(INSTALL_TOP)/fdk-aac/share
+	rm -rf fdk-aac-2.0.0
+endif
+	@echo -e "\033[0;1;32mfaac already build OK\033[0m"
+endif
 
 ### faac
 faac:
@@ -26,8 +57,7 @@ ifneq ($(shell [ -f $(INSTALL_TOP)/faac/lib/libfaac.a ] && echo y),y)
 	mkdir -p $(INSTALL_TOP)/faac
 	rm -rf faac-1.29.9.2
 	tar xf faac-1.29.9.2.tar.gz
-	cd faac-1.29.9.2/ && ./configure --prefix=$(INSTALL_TOP)/faac --enable-shared=no --enable-static=yes --with-mp4v2=no CC=$(CC) --host=$(HOST_NAME) && make -j4 #&& make install 
-	cd faac-1.29.9.2/ && make install
+	cd faac-1.29.9.2/ && ./configure --prefix=$(INSTALL_TOP)/faac --enable-shared=no --enable-static=yes --with-mp4v2=no CC=$(CC) --host=$(HOST_NAME) && make -j4 && make install 
 	rm -rf $(INSTALL_TOP)/faac/share
 	rm -rf faac-1.29.9.2
 endif
