@@ -9,6 +9,8 @@ SUPPORT_BUILD_LIBJPEG=y
 SUPPORT_BUILD_FAAC=y
 SUPPORT_BUILD_FDK_AAC=y
 SUPPORT_BUILD_STRACE=y
+SUPPORT_BUILD_VALGRINT=y
+SUPPORT_BUILD_GDBSERVER=y
 SUPPORT_BUILD_MXML=y
 SUPPORT_BUILD_HOSTAP=n
 SUPPORT_BUILD_WPA_SUPPORT=n
@@ -17,9 +19,38 @@ SUPPORT_BUILD_CURL=n
 SUPPORT_BUILD_OPUS=n
 SUPPORT_BUILD_OPENSSL=n
 
-all: mbedtls cjson iconv libuuid zbar libjpeg faac fdk-aac strace hostap wpa opus #openssl 
+all: mbedtls cjson iconv libuuid zbar libjpeg faac fdk-aac strace valgrint gdbserver hostap wpa opus #openssl 
 .PHONY:all
 	@echo -e "\033[0;1;32mbuild $(arch) platform lib\033[0m"
+
+### gdbserver
+gdbserver:
+ifeq ($(SUPPORT_BUILD_STRACE),y)
+ifneq ($(shell [ -f $(INSTALL_TOP)/gdbserver/bin/gdbserver ] && echo y),y)
+	mkdir -p $(INSTALL_TOP)/gdbserver
+	rm -rf gdb-7.8.1
+	tar xf gdb-7.8.1.tar.xz
+	cd gdb-7.8.1/gdb/gdbserver  && ./configure --prefix=$(INSTALL_TOP)/gdbserver  CC=$(CC) --host=$(HOST_NAME) && make -j4 &&  make install 
+	rm -rf $(INSTALL_TOP)/gdbserver/share
+	rm -rf gdb-7.8.1
+endif
+	@echo -e "\033[0;1;32mgdbserver already build OK\033[0m"
+endif
+
+### valgrint
+valgrint:
+ifeq ($(SUPPORT_BUILD_STRACE),y)
+ifneq ($(shell [ -f $(INSTALL_TOP)/valgrint/bin/valgrint ] && echo y),y)
+	mkdir -p $(INSTALL_TOP)/valgrint
+	rm -rf valgrind-3.15.0
+	tar xf valgrind-3.15.0.tar.bz2
+	cd valgrind-3.15.0  && sed -i "/armv7\*/c armv7\*|arm)" configure && ./configure --prefix=$(INSTALL_TOP)/valgrint  CC=$(CC) --host=$(HOST_NAME) 
+	make -C valgrind-3.15.0 -j16 && cd valgrind-3.15.0 && make install 
+	rm -rf $(INSTALL_TOP)/valgrint/share
+	rm -rf valgrind-3.15.0
+endif
+	@echo -e "\033[0;1;32mvalgrint already build OK\033[0m"
+endif
 
 ### strace
 strace:
@@ -110,7 +141,7 @@ ifneq ($(shell [ -f $(INSTALL_TOP)/mbedtls/lib/libmbedtls.a ] && echo y),y)
 		mkdir -p $(INSTALL_TOP)/mbedtls
 		tar xf mbedtls-2.12.0-apache.tgz
 		cd mbedtls-2.12.0 && mkdir build && cd build && cmake .. -DCMAKE_INSTALL_PREFIX=$(INSTALL_TOP)/mbedtls && make -j4 && make install && cd ../../
-		rm -fr mbedtls-2.12.0
+		#rm -fr mbedtls-2.12.0
 endif
 	@echo -e "\033[0;1;32mmbedtls already build OK\033[0m"
 endif
