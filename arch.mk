@@ -13,11 +13,14 @@ else ifeq ($(arch), gk720x)
 	
 else ifeq ($(arch), mstart)
 	CROSS=arm-buildroot-linux-uclibcgnueabihf-
-
+	HOST_NAME=arm-linux
 else ifeq ($(arch),hi3518ev200) 
 	CROSS=arm-hisiv300-linux-
 else ifeq ($(arch),himix200)
 	CROSS=arm-himix200-linux-
+else ifeq ($(arch),ms335)
+	CROSS=arm-linux-gnueabihf-
+	HOST_NAME=arm-linux-gnueabihf
 else ifeq ($(arch),)
 	ifeq ($(shell uname -m), x86_64)
 		arch=x64

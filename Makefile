@@ -15,7 +15,7 @@ SUPPORT_BUILD_MXML=y
 SUPPORT_BUILD_HOSTAP=n
 SUPPORT_BUILD_WPA_SUPPORT=n
 SUPPORT_BUILD_LOG4C=n
-SUPPORT_BUILD_CURL=n
+SUPPORT_BUILD_CURL=y
 SUPPORT_BUILD_OPUS=n
 SUPPORT_BUILD_OPENSSL=n
 
@@ -95,6 +95,25 @@ endif
 	@echo -e "\033[0;1;32mfaac already build OK\033[0m"
 endif
 
+### curl
+curl: mbedtls
+ifeq ($(SUPPORT_BUILD_CURL),y)
+ifneq ($(shell [ -f $(INSTALL_TOP)/curl/lib/libcurl.a ] && echo y),y)
+	mkdir -p $(INSTALL_TOP)/curl
+	rm -rf curl-7.77.0
+	tar xf curl-7.77.0.tar.gz
+	cd curl-7.77.0/ && \
+	./configure --prefix=$(INSTALL_TOP)/curl \
+	--enable-shared=no --enable-static=yes CC=$(CC) \
+	--host=$(HOST_NAME) --enable-ipv6  \
+	--with-mbedtls=$(INSTALL_TOP)/mbedtls && \
+	make -j64 && make install
+	
+	rm -rf $(INSTALL_TOP)/curl/share
+	rm -rf curl-7.77.0
+endif
+	@echo -e "\033[0;1;32mcurl already build OK\033[0m"
+endif
 
 ### libjpeg
 libjpeg:
@@ -150,9 +169,11 @@ endif
 cjson:
 ifeq ($(SUPPORT_BUILD_CJSON),y)
 ifneq ($(shell [ -f ${INSTALL_TOP}/cjson/lib/libcjson.a ] && echo y),y)
+	rm -rf cJSON
 	mkdir -p $(INSTALL_TOP)/cjson
 	unzip cJSON.zip > /dev/null
-	cd cJSON && make CC=$(CC) -j4 &&  make install PREFIX=${INSTALL_TOP}/cjson && cd -
+	mkdir -p cJSON/build && cd cJSON/build && cmake .. -DBUILD_STATIC_LIBS=On -DBUILD_SHARED_LIBS=Off -DCMAKE_INSTALL_PREFIX=$(INSTALL_TOP)/cjson && make CC=$(CC) -j64 && make install && cd - 
+	#cd cJSON && make CC=$(CC) -j4 &&  make install PREFIX=${INSTALL_TOP}/cjson && cd -
 	rm -fr cJSON
 endif
 	@echo -e "\033[0;1;32mcjson already build OK\033[0m"
@@ -163,9 +184,9 @@ iconv:
 ifeq ($(SUPPORT_BUILD_ICONV),y)
 ifneq ($(shell [ -f ${INSTALL_TOP}/iconv/lib/libconv.a] && echo y),y)
 	mkdir -p $(INSTALL_TOP)/iconv
-	tar xf libiconv-1.15.tar.gz
-	cd libiconv-1.15 && ./configure --prefix=${INSTALL_TOP}/iconv --host=${HOST_NAME} --enable-static=yes --enable-shared=no CC=$(CC) && make -j4 && make install && cd -
-	rm -rf libiconv-1.15	
+	tar xf libiconv-1.16.tar.gz
+	cd libiconv-1.16 && ./configure --prefix=${INSTALL_TOP}/iconv --host=${HOST_NAME} --enable-static=yes --enable-shared=no CC=$(CC) && make -j4 && make install && cd -
+	rm -rf libiconv-1.16	
 endif
 	@echo -e "\033[0;1;32miconv already build OK\033[0m"
 endif
